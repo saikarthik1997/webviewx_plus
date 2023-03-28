@@ -109,29 +109,32 @@ class WebViewX extends StatefulWidget implements view_interface.WebViewX {
   /// if all features become cross platform.
   @override
   final MobileSpecificParams mobileSpecificParams;
+  @override
+  final Function onScrollChanged;
 
   /// Constructor
-  const WebViewX({
-    Key? key,
-    this.initialContent = 'about:blank',
-    this.initialSourceType = SourceType.url,
-    this.userAgent,
-    required this.width,
-    required this.height,
-    this.onWebViewCreated,
-    this.jsContent = const {},
-    this.dartCallBacks = const {},
-    this.ignoreAllGestures = false,
-    this.javascriptMode = JavascriptMode.unrestricted,
-    this.initialMediaPlaybackPolicy =
-        AutoMediaPlaybackPolicy.requireUserActionForAllMediaTypes,
-    this.onPageStarted,
-    this.onPageFinished,
-    this.navigationDelegate,
-    this.onWebResourceError,
-    this.webSpecificParams = const WebSpecificParams(),
-    this.mobileSpecificParams = const MobileSpecificParams(),
-  }) : super(key: key);
+  const WebViewX(
+      {Key? key,
+      this.initialContent = 'about:blank',
+      this.initialSourceType = SourceType.url,
+      this.userAgent,
+      required this.width,
+      required this.height,
+      this.onWebViewCreated,
+      this.jsContent = const {},
+      this.dartCallBacks = const {},
+      this.ignoreAllGestures = false,
+      this.javascriptMode = JavascriptMode.unrestricted,
+      this.initialMediaPlaybackPolicy =
+          AutoMediaPlaybackPolicy.requireUserActionForAllMediaTypes,
+      this.onPageStarted,
+      this.onPageFinished,
+      this.navigationDelegate,
+      this.onWebResourceError,
+      this.webSpecificParams = const WebSpecificParams(),
+      this.mobileSpecificParams = const MobileSpecificParams(),
+      required this.onScrollChanged})
+      : super(key: key);
 
   @override
   _WebViewXState createState() => _WebViewXState();
@@ -218,6 +221,31 @@ class _WebViewXState extends State<WebViewX> {
       webViewXController.connector = jsWindowObject;
 
       then?.call();
+   /*   jsWindowObject.callMethod('addEventListener', [
+        "scroll",
+        js.allowInterop((event) {
+          widget.onScrollChanged( jsWindowObject["scrollX"],
+              jsWindowObject["scrollY"], jsWindowObject["innerHeight"]);
+          debugPrint("offet scrollY === ${jsWindowObject["pageYOffset"]}");
+          debugPrint("scroll scrollY === ${jsWindowObject["scrollY"]}");
+          debugPrint("scroll scrollX === ${jsWindowObject["scrollX"]}");
+          debugPrint("window innerHeight === ${jsWindowObject["innerHeight"]}");
+        })
+      ]);*/
+      jsWindowObject.callMethod('addEventListener', [
+        "wheel",
+        js.allowInterop((event) {
+          widget.onScrollChanged(event["deltaY"]);
+          debugPrint("wheel event delta Y, ${event["deltaY"]}");
+        /*  widget.onScrollChanged( jsWindowObject["scrollX"],
+              jsWindowObject["scrollY"], jsWindowObject["innerHeight"]);
+          debugPrint("offet scrollY === ${jsWindowObject["pageYOffset"]}");
+          debugPrint("scroll scrollY === ${jsWindowObject["scrollY"]}");
+          debugPrint("scroll scrollX === ${jsWindowObject["scrollX"]}");
+          debugPrint("window innerHeight === ${jsWindowObject["innerHeight"]}");*/
+        })
+      ]);
+
 
       /*
       // Registering the same events as we already do inside

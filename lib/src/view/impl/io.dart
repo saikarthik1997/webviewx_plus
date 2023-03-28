@@ -101,6 +101,8 @@ class WebViewX extends StatelessWidget implements view_interface.WebViewX {
   /// if all features become cross platform.
   @override
   final MobileSpecificParams mobileSpecificParams;
+  @override
+  final Function onScrollChanged;
 
   /// Constructor
   const WebViewX({
@@ -123,11 +125,13 @@ class WebViewX extends StatelessWidget implements view_interface.WebViewX {
     this.onWebResourceError,
     this.webSpecificParams = const WebSpecificParams(),
     this.mobileSpecificParams = const MobileSpecificParams(),
+    required this.onScrollChanged,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return mobile.WebViewX(
+      onScrollChanged: (_) {},
       key: key,
       initialContent: initialContent,
       initialSourceType: initialSourceType,

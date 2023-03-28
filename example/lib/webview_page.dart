@@ -81,6 +81,7 @@ class _WebViewXPageState extends State<WebViewXPage> {
 
   Widget _buildWebViewX() {
     return WebViewX(
+      onScrollChanged: () {},
       key: const ValueKey('webviewx'),
       initialContent: initialContent,
       initialSourceType: SourceType.html,
