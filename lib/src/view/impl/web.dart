@@ -155,6 +155,10 @@ class _WebViewXState extends State<WebViewX> {
 
   late bool _didLoadInitialContent;
   late bool _ignoreAllGestures;
+ /* var xDown = null;
+  var yDown = null;*/
+  var lastY=0.0;
+  var currentY = 0.0;
 
   @override
   void initState() {
@@ -209,9 +213,9 @@ class _WebViewXState extends State<WebViewX> {
   //
   // Iframe viewType is used as a disambiguator.
   // Check function [embedWebIframeJsConnector] from [HtmlUtils] for details.
+
   void _connectJsToFlutter({VoidCallback? then}) {
-    var xDown = null;
-    var yDown = null;
+
 
     js.context['$jsToDartConnectorFN$iframeViewType'] = (js.JsObject window) {
       jsWindowObject = window;
@@ -260,15 +264,28 @@ class _WebViewXState extends State<WebViewX> {
           // widget.onScrollChanged(event["deltaY"]);
           debugPrint("touchstart event");
           var firstTouch = event["touches"][0];
-          xDown = firstTouch["clientX"];
-          yDown = firstTouch["clientY"];
+         // xDown = firstTouch["clientX"];
+          currentY = firstTouch["clientY"];
+          lastY = currentY;
         })
       ]);
 
       jsWindowObject.callMethod('addEventListener', [
         "touchmove",
         js.allowInterop((event) {
-          // widget.onScrollChanged(event["deltaY"]);
+          currentY = event["touches"][0]["clientY"];
+          if(currentY > lastY){
+            // moved down
+            widget.onScrollChangedForMobileWeb?.call(currentY-lastY,true);
+          }else if(currentY < lastY){
+            // moved up
+            widget.onScrollChangedForMobileWeb?.call(lastY-currentY,false);
+
+          }
+          lastY = currentY;
+
+
+         /* // widget.onScrollChanged(event["deltaY"]);
           debugPrint("touchmove event");
           if (xDown==null || yDown==null) {
             debugPrint("touchmove , returning");
@@ -283,24 +300,24 @@ class _WebViewXState extends State<WebViewX> {
 
           if (xDiff.abs() > yDiff.abs()) {
             if (xDiff > 0) {
-              /* right swipe */
+              *//* right swipe *//*
             //  console.log("Right swipe");
             } else {
-              /* left swipe */
+              *//* left swipe *//*
              // console.log("Left swipe");
             }
           } else {
             if (yDiff > 0) {
-              /* down swipe */
-              widget.onScrollChangedForMobileWeb?.call(yDiff);
+              *//* down swipe *//*
+              widget.onScrollChangedForMobileWeb?.call(yUp,false);
             } else {
-              /* up swipe */
-              widget.onScrollChangedForMobileWeb?.call(yDiff);
+              *//* up swipe *//*
+              widget.onScrollChangedForMobileWeb?.call(yUp,true);
             }
           }
-          /* reset values */
+          *//* reset values *//*
           xDown = null;
-          yDown = null;
+          yDown = null;*/
         })
       ]);
 
