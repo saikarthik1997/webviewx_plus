@@ -77,6 +77,7 @@ abstract class WebViewX {
   /// if all features become cross platform.
   final MobileSpecificParams mobileSpecificParams;
   final Function onScrollChanged;
+  final Function? onScrollChangedForMobileWeb;
 
   // /// Constructor
   const WebViewX({
@@ -98,6 +99,7 @@ abstract class WebViewX {
     this.onWebResourceError,
     this.webSpecificParams = const WebSpecificParams(),
     this.mobileSpecificParams = const MobileSpecificParams(),
-    required this.onScrollChanged
+    required this.onScrollChanged,
+     this.onScrollChangedForMobileWeb
   });
 }

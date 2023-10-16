@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
+
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:js' as js;
 
@@ -111,6 +113,8 @@ class WebViewX extends StatefulWidget implements view_interface.WebViewX {
   final MobileSpecificParams mobileSpecificParams;
   @override
   final Function onScrollChanged;
+  @override
+  final Function? onScrollChangedForMobileWeb;
 
   /// Constructor
   const WebViewX(
@@ -133,7 +137,8 @@ class WebViewX extends StatefulWidget implements view_interface.WebViewX {
       this.onWebResourceError,
       this.webSpecificParams = const WebSpecificParams(),
       this.mobileSpecificParams = const MobileSpecificParams(),
-      required this.onScrollChanged})
+      required this.onScrollChanged,
+       this.onScrollChangedForMobileWeb})
       : super(key: key);
 
   @override
@@ -205,6 +210,9 @@ class _WebViewXState extends State<WebViewX> {
   // Iframe viewType is used as a disambiguator.
   // Check function [embedWebIframeJsConnector] from [HtmlUtils] for details.
   void _connectJsToFlutter({VoidCallback? then}) {
+    var xDown = null;
+    var yDown = null;
+
     js.context['$jsToDartConnectorFN$iframeViewType'] = (js.JsObject window) {
       jsWindowObject = window;
 
@@ -221,7 +229,7 @@ class _WebViewXState extends State<WebViewX> {
       webViewXController.connector = jsWindowObject;
 
       then?.call();
-   /*   jsWindowObject.callMethod('addEventListener', [
+      /*   jsWindowObject.callMethod('addEventListener', [
         "scroll",
         js.allowInterop((event) {
           widget.onScrollChanged( jsWindowObject["scrollX"],
@@ -237,7 +245,7 @@ class _WebViewXState extends State<WebViewX> {
         js.allowInterop((event) {
           widget.onScrollChanged(event["deltaY"]);
           debugPrint("wheel event delta Y, ${event["deltaY"]}");
-        /*  widget.onScrollChanged( jsWindowObject["scrollX"],
+          /*  widget.onScrollChanged( jsWindowObject["scrollX"],
               jsWindowObject["scrollY"], jsWindowObject["innerHeight"]);
           debugPrint("offet scrollY === ${jsWindowObject["pageYOffset"]}");
           debugPrint("scroll scrollY === ${jsWindowObject["scrollY"]}");
@@ -246,6 +254,57 @@ class _WebViewXState extends State<WebViewX> {
         })
       ]);
 
+      jsWindowObject.callMethod('addEventListener', [
+        "touchstart",
+        js.allowInterop((event) {
+          // widget.onScrollChanged(event["deltaY"]);
+          debugPrint("touchstart event");
+          var firstTouch = event["touches"][0];
+          xDown = firstTouch["clientX"];
+          yDown = firstTouch["clientY"];
+        })
+      ]);
+
+      jsWindowObject.callMethod('addEventListener', [
+        "touchmove",
+        js.allowInterop((event) {
+          // widget.onScrollChanged(event["deltaY"]);
+          debugPrint("touchmove event");
+          if (xDown==null || yDown==null) {
+            debugPrint("touchmove , returning");
+            return;
+          }
+
+          var xUp = event["touches"][0]["clientX"];
+          var yUp = event["touches"][0]["clientY"];
+
+          var xDiff = xDown - xUp;
+          var yDiff = yDown - yUp;
+
+          if (xDiff.abs() > yDiff.abs()) {
+            if (xDiff > 0) {
+              /* right swipe */
+            //  console.log("Right swipe");
+            } else {
+              /* left swipe */
+             // console.log("Left swipe");
+            }
+          } else {
+            if (yDiff > 0) {
+              /* down swipe */
+              widget.onScrollChangedForMobileWeb?.call(yDiff);
+            } else {
+              /* up swipe */
+              widget.onScrollChangedForMobileWeb?.call(yDiff);
+            }
+          }
+          /* reset values */
+          xDown = null;
+          yDown = null;
+        })
+      ]);
+
+      //adding
 
       /*
       // Registering the same events as we already do inside
